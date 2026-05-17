@@ -552,8 +552,8 @@ body {
 }
 
 .hero-btns {
-  display: flex; flex-direction: column; gap: 10px;
-  align-items: flex-start; position: relative; z-index: 1; max-width: 300px;
+  display: flex; flex-direction: row; gap: 10px; flex-wrap: wrap;
+  align-items: center; position: relative; z-index: 1;
 }
 
 .btn-neon {
@@ -562,7 +562,7 @@ body {
   font-family: 'Syne', sans-serif; font-weight: 700;
   font-size: 12px; letter-spacing: 2px; text-transform: uppercase;
   cursor: pointer; text-decoration: none; transition: all 0.28s;
-  width: 100%; border: none; justify-content: center;
+  border: none; justify-content: center; width: auto;
 }
 .btn-neon-primary {
   background: linear-gradient(135deg, var(--violet), var(--coral));
@@ -575,6 +575,41 @@ body {
   border: 1px solid rgba(0,212,255,0.3);
 }
 .btn-neon-ghost:hover { background: var(--cyanglow); border-color: var(--cyan); }
+
+/* Hero social icon buttons */
+.hero-social-icons {
+  display: flex; gap: 10px; align-items: center;
+}
+.hero-social-btn {
+  width: 46px; height: 46px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  text-decoration: none;
+  transition: all 0.28s;
+  flex-shrink: 0;
+}
+.hero-ig-btn {
+  background: rgba(225,48,108,0.08);
+  border: 1px solid rgba(225,48,108,0.3);
+  color: #e1306c;
+}
+.hero-ig-btn:hover {
+  background: rgba(225,48,108,0.18);
+  border-color: #e1306c;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(225,48,108,0.3);
+}
+.hero-tt-btn {
+  background: rgba(105,201,208,0.08);
+  border: 1px solid rgba(105,201,208,0.3);
+  color: #69c9d0;
+}
+.hero-tt-btn:hover {
+  background: rgba(105,201,208,0.18);
+  border-color: #69c9d0;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(105,201,208,0.25);
+}
 
 /* Stat row */
 .stat-row {
@@ -591,18 +626,38 @@ body {
 .stat-chip.cyan strong { color: var(--cyan); }
 
 /* Gallery */
-.gallery-section { padding: 0 16px 0 20px; margin-bottom: 24px; }
-.gallery-label { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-.gallery-label-text { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 3px; text-transform: uppercase; color: var(--violet); }
+.gallery-section { padding: 0; margin-bottom: 28px; }
+.gallery-label { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding: 0 20px; }
+.gallery-label-text { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 3px; text-transform: uppercase; color: var(--violet); white-space: nowrap; }
 .gallery-label-line { flex: 1; height: 1px; background: linear-gradient(90deg, var(--line), transparent); }
 
-.gallery-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; margin-bottom: 0; }
-.gallery-grid img {
-  width: 100%; height: 185px; object-fit: cover;
-  border-radius: 14px; border: 1px solid var(--glassline);
-  transition: all 0.35s; filter: saturate(0.9);
+.gallery-grid {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 4px 20px 14px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
-.gallery-grid img:hover { transform: scale(1.04); box-shadow: 0 10px 36px var(--violetglow); filter: saturate(1.1); border-color: var(--violet); }
+.gallery-grid::-webkit-scrollbar { display: none; }
+.gallery-grid > div {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+}
+.gallery-grid img {
+  width: 170px;
+  height: 220px;
+  object-fit: cover;
+  border-radius: 14px;
+  border: 1px solid var(--glassline);
+  transition: all 0.35s;
+  filter: saturate(0.9);
+  display: block;
+}
+.gallery-grid img:hover { transform: scale(1.03); box-shadow: 0 10px 36px var(--violetglow); filter: saturate(1.1); border-color: var(--violet); }
 
 .book-look-strip { display: flex; justify-content: center; padding: 12px 24px 24px; }
 .btn-book-look {
@@ -794,8 +849,7 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.5); }
 
   <!-- Brand -->
   <div class="sidebar-head">
-    <div class="sidebar-brand">ATM Beauty</div>
-    <div class="sidebar-tagline">Kingston, Jamaica</div>
+
   </div>
 
   <!-- Navigation -->
@@ -895,15 +949,16 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.5); }
       </h1>
       <p class="hero-sub">Premium braids, lashes, weaves & colour.<br>Mon – Sat · 8 AM to 5 PM.</p>
       <div class="hero-btns">
-        <button class="btn-neon btn-neon-primary" onclick="switchTab('viewBook')">Book Your Appointment →</button>
-        <a class="btn-neon btn-neon-ghost" href="https://www.instagram.com/atmbeautystyles?igsh=MTlycXFxb2xoc3A2NQ==" target="_blank">Follow on Instagram ↗</a>
+        <button class="btn-neon btn-neon-primary" onclick="switchTab('viewBook')">Book Now →</button>
+        <div class="hero-social-icons">
+          <a class="hero-social-btn hero-ig-btn" href="https://www.instagram.com/atmbeautystyles?igsh=MTlycXFxb2xoc3A2NQ==" target="_blank" aria-label="Instagram">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+          </a>
+          <a class="hero-social-btn hero-tt-btn" href="https://www.tiktok.com/@atmbeautystyles?_r=1&_t=ZS-95sLV8QBgiv" target="_blank" aria-label="TikTok">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 448 512" fill="currentColor"><path d="M448 209.91a210.06 210.06 0 0 1-122.77-39.25v178.72A162.55 162.55 0 1 1 185 188.31v89.89a74.62 74.62 0 1 0 52.23 71.18V0h88a121.18 121.18 0 0 0 1.86 22.17A122.18 122.18 0 0 0 381 102.39a121.43 121.43 0 0 0 67 20.14z"/></svg>
+          </a>
+        </div>
       </div>
-    </div>
-
-    <div class="stat-row">
-      <div class="stat-chip coral"><strong>Mon–Sat</strong>Open daily</div>
-      <div class="stat-chip violet"><strong>8AM–5PM</strong>Hours</div>
-      <div class="stat-chip cyan"><strong>Deposit</strong>Required</div>
     </div>
 
     <div id="galleryDisplay"></div>
