@@ -103,6 +103,7 @@ body{font-family:'Outfit',sans-serif;background:var(--navy);color:var(--offwhite
 .remove-img-btn{position:absolute;top:7px;right:7px;background:rgba(200,50,50,.85);color:white;border:none;padding:5px 10px;border-radius:7px;cursor:pointer;font-size:11px;font-weight:700;backdrop-filter:blur(4px);transition:background .2s;}
 .remove-img-btn:hover{background:#c0392b;}
 .drag-hint{position:absolute;top:7px;left:7px;background:rgba(0,0,0,.55);color:var(--cyan);border-radius:6px;padding:3px 8px;font-size:10px;pointer-events:none;backdrop-filter:blur(4px);}
+.gallery-item-cat-label{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,rgba(124,58,237,0.95),rgba(124,58,237,0.7));color:#fff;padding:8px 10px;font-size:10px;font-weight:700;text-align:center;letter-spacing:1.5px;text-transform:uppercase;font-family:'Syne',sans-serif;}
 
 /* RESERVATION CARDS */
 .res-group-label{margin:28px 0 10px;padding:10px 16px;background:var(--navy2);color:var(--cyan);border-radius:10px;font-family:'Syne',sans-serif;font-weight:700;font-size:11px;letter-spacing:3px;text-transform:uppercase;border:1px solid var(--linecyan);text-align:center;}
@@ -204,13 +205,14 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(.5);}
         <div class="field-label">Category</div>
         <select id="photoCategorySelect" class="field-select">
           <option value="BRAIDS">BRAIDS</option>
-          <option value="KNOTLESS">KNOTLESS</option>
-          <option value="WEAVES &amp; EXTENSIONS">WEAVES &amp; EXTENSIONS</option>
-          <option value="LASHES">LASHES</option>
-          <option value="NATURAL STYLES">NATURAL STYLES</option>
-          <option value="COLOUR">COLOUR</option>
-          <option value="SILK PRESS">SILK PRESS</option>
-          <option value="BEAUTY &amp; GROOMING">BEAUTY &amp; GROOMING</option>
+          <option value="TWISTS">TWISTS</option>
+          <option value="LOCS">LOCS</option>
+          <option value="CORNROWS">CORNROWS</option>
+          <option value="WEAVES">WEAVES</option>
+          <option value="QUICK WEAVE">QUICK WEAVE</option>
+          <option value="PONYTAILS">PONYTAILS</option>
+          <option value="NATURAL HAIR">NATURAL HAIR</option>
+          <option value="OTHER">OTHER</option>
         </select>
         <button class="btn-primary" onclick="uploadPhoto()" id="uploadBtn">Add Photo ✦</button>
         <div id="adminGallery"></div>
@@ -391,7 +393,7 @@ function loadGallery(){
       const grid=document.getElementById(safeId);
       cats[cat].forEach(item=>{
         const cell=document.createElement('div');cell.setAttribute('draggable','true');cell.dataset.docId=item.id;
-        cell.innerHTML=`<img src="${item.url}" alt="${cat}" loading="lazy"><button class="remove-img-btn" onclick="removePhoto('${item.id}')">✕</button><div class="drag-hint">⠿ DRAG</div>`;
+        cell.innerHTML=`<img src="${item.url}" alt="${cat}" loading="lazy"><div class="gallery-item-cat-label">${cat}</div><button class="remove-img-btn" onclick="removePhoto('${item.id}')">✕</button><div class="drag-hint">⠿ DRAG</div>`;
         grid.appendChild(cell);
       });
       enableDragSort(grid);
