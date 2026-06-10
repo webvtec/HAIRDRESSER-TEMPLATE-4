@@ -193,13 +193,13 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(.5);}
       <div class="tab-body">
         <div class="section-title"><span>✦</span> Gallery Management</div>
         <div class="upload-area" id="uploadArea">
-          <input type="file" id="photoFileInput" accept="image/*" onchange="previewImage(event)"/>
+          <input type="file" id="photoFileInput" accept="image/*" multiple onchange="previewImages(event)"/>
           <div class="upload-icon">✦</div>
-          <p><strong>Tap to choose a photo</strong><br>or drag and drop here</p>
+          <p><strong>Tap to choose photos</strong><br>or drag and drop here — select multiple!</p>
         </div>
-        <img id="imagePreview" alt="Preview"/>
+        <div id="imagePreviewGrid" style="display:none;flex-wrap:wrap;gap:8px;margin:10px 0;justify-content:center;"></div>
         <div id="uploadProgress">
-          <p style="font-size:12px;color:var(--dim);margin-bottom:6px;">Uploading...</p>
+          <p id="uploadProgressLabel" style="font-size:12px;color:var(--dim);margin-bottom:6px;">Uploading...</p>
           <progress id="progressBar" value="0" max="100"></progress>
         </div>
         <div class="field-label">Category</div>
@@ -213,8 +213,9 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(.5);}
           <option value="PONYTAILS">PONYTAILS</option>
           <option value="NATURAL HAIR">NATURAL HAIR</option>
           <option value="OTHER">OTHER</option>
+          <option value="WIGS">WIGS</option>
         </select>
-        <button class="btn-primary" onclick="uploadPhoto()" id="uploadBtn">Add Photo ✦</button>
+        <button class="btn-primary" onclick="uploadPhoto()" id="uploadBtn">Upload Photos ✦</button>
         <div id="adminGallery"></div>
       </div>
     </div>
@@ -354,29 +355,63 @@ function showToast(msg,success=true){
 }
 
 // GALLERY
-function previewImage(event){
-  const file=event.target.files[0];if(!file)return;
-  const preview=document.getElementById('imagePreview'),reader=new FileReader();
-  reader.onload=e=>{preview.src=e.target.result;preview.style.display='block';};
-  reader.readAsDataURL(file);
-  document.getElementById('uploadArea').querySelector('p').innerHTML=`<strong>${file.name}</strong><br><span style="color:var(--dimmer);">Ready to upload</span>`;
+function previewImages(event){
+  const files=Array.from(event.target.files);if(!files.length)return;
+  const grid=document.getElementById('imagePreviewGrid');
+  grid.innerHTML='';grid.style.display='flex';
+  files.forEach(file=>{
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const img=document.createElement('img');
+      img.src=e.target.result;
+      img.style.cssText='width:80px;height:80px;object-fit:cover;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.4);';
+      grid.appendChild(img);
+    };
+    reader.readAsDataURL(file);
+  });
+  const count=files.length;
+  document.getElementById('uploadArea').querySelector('p').innerHTML=`<strong>${count} photo${count>1?'s':''} selected</strong><br><span style="color:var(--dimmer);">Ready to upload</span>`;
 }
 
-function uploadPhoto(){
-  const fileInput=document.getElementById('photoFileInput'),category=document.getElementById('photoCategorySelect').value.trim(),file=fileInput.files[0];
-  if(!file){alert('Please select a photo first.');return;}
+async function uploadPhoto(){
+  const fileInput=document.getElementById('photoFileInput'),category=document.getElementById('photoCategorySelect').value.trim();
+  const files=Array.from(fileInput.files);
+  if(!files.length){alert('Please select at least one photo first.');return;}
   if(!category){alert('Please select a category.');return;}
-  const btn=document.getElementById('uploadBtn');btn.disabled=true;btn.textContent='Uploading...';
-  const progressDiv=document.getElementById('uploadProgress'),progressBar=document.getElementById('progressBar');
+  const btn=document.getElementById('uploadBtn');btn.disabled=true;
+  const progressDiv=document.getElementById('uploadProgress'),progressBar=document.getElementById('progressBar'),progressLabel=document.getElementById('uploadProgressLabel');
   progressDiv.style.display='block';
-  const ext=file.name.split('.').pop();
-  const fileName=`gallery/${Date.now()}_${Math.random().toString(36).substring(2)}.${ext}`;
-  const uploadTask=storage.ref(fileName).put(file);
-  uploadTask.on('state_changed',
-    snap=>{progressBar.value=(snap.bytesTransferred/snap.totalBytes)*100;},
-    err=>{alert('Upload failed: '+err.message);btn.disabled=false;btn.textContent='Add Photo ✦';progressDiv.style.display='none';},
-    ()=>{uploadTask.snapshot.ref.getDownloadURL().then(url=>db.collection('gallery').add({url,category,sortOrder:Date.now(),uploadedAt:firebase.firestore.FieldValue.serverTimestamp()})).then(()=>{showToast('✅ Photo uploaded!');fileInput.value='';document.getElementById('imagePreview').style.display='none';progressDiv.style.display='none';progressBar.value=0;btn.disabled=false;btn.textContent='Add Photo ✦';document.getElementById('uploadArea').querySelector('p').innerHTML='<strong>Tap to choose a photo</strong><br>or drag and drop here';}).catch(err=>{alert('Error saving: '+err.message);btn.disabled=false;btn.textContent='Add Photo ✦';progressDiv.style.display='none';});}
-  );
+
+  let completed=0;const total=files.length;
+  const bytesMap=new Array(total).fill(0),totalBytesMap=new Array(total).fill(1);
+  const updateProgress=()=>{
+    const tb=totalBytesMap.reduce((a,b)=>a+b,0),tr=bytesMap.reduce((a,b)=>a+b,0);
+    progressBar.value=(tr/tb)*100;
+    progressLabel.textContent=`Uploading ${completed} of ${total}...`;
+  };
+  const uploadOne=(file,index)=>new Promise((resolve,reject)=>{
+    const ext=file.name.split('.').pop();
+    const fileName=`gallery/${Date.now()}_${Math.random().toString(36).substring(2)}.${ext}`;
+    const uploadTask=storage.ref(fileName).put(file);
+    uploadTask.on('state_changed',
+      snap=>{bytesMap[index]=snap.bytesTransferred;totalBytesMap[index]=snap.totalBytes;updateProgress();},
+      reject,
+      ()=>{uploadTask.snapshot.ref.getDownloadURL().then(url=>db.collection('gallery').add({url,category,sortOrder:Date.now()+index,uploadedAt:firebase.firestore.FieldValue.serverTimestamp()})).then(()=>{completed++;updateProgress();resolve();}).catch(reject);}
+    );
+  });
+  try{
+    await Promise.all(files.map((f,i)=>uploadOne(f,i)));
+    showToast(`✅ ${total} photo${total>1?'s':''} uploaded!`);
+    fileInput.value='';
+    document.getElementById('imagePreviewGrid').style.display='none';
+    document.getElementById('imagePreviewGrid').innerHTML='';
+    progressDiv.style.display='none';progressBar.value=0;
+    btn.disabled=false;btn.textContent='Upload Photos ✦';
+    document.getElementById('uploadArea').querySelector('p').innerHTML='<strong>Tap to choose photos</strong><br>or drag and drop here — select multiple!';
+  }catch(err){
+    alert('Upload failed: '+err.message);
+    btn.disabled=false;btn.textContent='Upload Photos ✦';progressDiv.style.display='none';
+  }
 }
 
 function loadGallery(){
